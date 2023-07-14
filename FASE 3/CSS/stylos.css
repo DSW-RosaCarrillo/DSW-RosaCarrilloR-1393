@@ -1,0 +1,33 @@
+.contenedor {
+display: grid;
+grid-template-areas:
+'A A A'
+'B B B'
+'C C C'
+;
+}
+
+header{
+
+}
+
+nav{
+    background-color: #396EB0;
+}
+section{
+    background-color: #DADDFC;
+    grid-column: 1/4;
+}
+aside{
+    background-color: #FC997C;
+    grid-column: 4/5;
+}
+footer{
+    background-color:#2E4C6D;
+}
+.menu-horizontal{
+    display:flex;
+    flex-direction: row;
+   
+}
+
