@@ -1,0 +1,2 @@
+try{(function(d){var s=d.createElement("script");s.setAttribute("data-account","oKZThxxgsF");s.setAttribute("src","https://cdn.userway.org/widget.js");(d.body||d.head).appendChild(s);})(document)}catch(e){console.error('Error in script declaration; Error:'+e.message);};
+try{window.onload=()=>{$('#onload').modal('show');}}catch(e){console.error('Error in script declaration; Error:'+e.message);};

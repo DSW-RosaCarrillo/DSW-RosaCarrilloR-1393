@@ -1,0 +1,2306 @@
+$(function () {
+  let skarletConfig = window.skarletConfig;
+  if (typeof window.skarletConfig === "undefined") {
+    skarletConfig = {
+      chatUrl: "wss://unad.kpital.co:8001/stream",
+      chatApiUrl: "https://unad.kpital.co/chat",
+      paramApiUrl: "https://unad.kpital.co/api/parameters",
+      chatId: "125555",
+      whatsAppNumber: "5713759500",
+      chatButtonImage: "https://unad.kpital.co:8006/static/images/Chatbot.png",
+    };
+  }
+  console.log("Skarlet chat V.0.14.1");
+  const responseImg = fetch(`${skarletConfig.paramApiUrl}/domains/region_unad/`, {method: "OPTIONS"}).then(
+    (responseImg) => {
+      if (!responseImg.ok) {
+        return;
+      }
+      var socket;
+      var reconnectionsMade = 0;
+      const ws_path = `${skarletConfig.chatUrl}/`;
+      const options = {
+        connectionTimeout: 1000,
+        maxRetries: 5,
+      };
+
+      //adding css and JS needed
+      // let js_sc1 = '<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>'
+      let js_sc2 =
+        '<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>';
+      let js_sc3 =
+        '<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>';
+      let js_sc4 =
+        '<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/2.4.0/js/adminlte.min.js" integrity="sha512-4LW2vmg8t+drPiNqhkUrtVZ3M/UCyhEhVasHYx7d+mXKjcw/G0BSuQ78FnkzPyWU23QBXtTUrKoPmX95KTLE4A==" crossorigin="anonymous"></script>';
+      // let js_sc5 = '<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/js/fontawesome.min.js" integrity="sha512-pafh0hrrT9ZPZl/jx0cwyp7N2+ozgQf+YK94jSupHHLD2lcEYTLxEju4mW/2sbn4qFEfxJGZyIX/yJiQvgglpw==" crossorigin="anonymous"></script>'
+      let js_sc5 =
+        '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/Sw==" crossorigin="anonymous" />';
+      // let js_sc6 = '<script src="https://cdnjs.cloudflare.com/ajax/libs/emojionearea/3.4.2/emojionearea.min.js" integrity="sha512-hkvXFLlESjeYENO4CNi69z3A1puvONQV5Uh+G4TUDayZxSLyic5Kba9hhuiNLbHqdnKNMk2PxXKm0v7KDnWkYA==" crossorigin="anonymous"></script>'
+      let js_sc6 =
+        '<script src="https://cdnjs.cloudflare.com/ajax/libs/emojionearea/3.0.0/emojionearea.min.js" integrity="sha512-r8dziOR5R8anruiJsfSaPP7YZgM7Act39UXSV2y9upkpaKbek7snDzke7KxTPgrgt22z3Clri1lAtQrch30wDw==" crossorigin="anonymous"></script>';
+      let js_sc7 =
+        '<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.textcomplete/1.8.5/jquery.textcomplete.min.js"></script>';
+
+      // $("body").append(js_sc1)
+      $("body").append(js_sc2);
+      // $("body").append(js_sc3)
+      // $("body").append(js_sc4)
+      $("body").append(js_sc5);
+      $("body").append(js_sc6);
+      $("body").append(js_sc7);
+      // let css_sc1 = '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">'
+      let css_sc1 =
+        '<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">';
+      let css_sc2 =
+        '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/2.4.0/css/AdminLTE.min.css" integrity="sha512-WwxBYWUrN/LPCceidkNpgYFBiIjrickdz+Ts+55PAzTJ9sSP8EVfId6lq0cl3/kSnGECF/7v3p3BnCLkvVhs/w==" crossorigin="anonymous" />';
+      let css_sc3 =
+        '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/fontawesome.min.css" integrity="sha512-shT5e46zNSD6lt4dlJHb+7LoUko9QZXTGlmWWx0qjI9UhQrElRb+Q5DM7SVte9G9ZNmovz2qIaV7IWv0xQkBkw==" crossorigin="anonymous" />';
+      // let css_sc4 = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/emojionearea/3.4.2/emojionearea.min.css" integrity="sha512-vEia6TQGr3FqC6h55/NdU3QSM5XR6HSl5fW71QTKrgeER98LIMGwymBVM867C1XHIkYD9nMTfWK2A0xcodKHNA==" crossorigin="anonymous" />'
+      let css_sc4 =
+        '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/emojionearea/3.0.0/emojionearea.min.css" integrity="sha512-ivXYpSg1rSUJGRd2eVR3bDpp6YSdZjQHB0V35qpKXac8+ko6T4v3yBQKv04PtbKGSBRCflJTZ5TKmH8ZqtrVRw==" crossorigin="anonymous" />';
+      // $("head").append(css_sc1)
+      // $("head").append(css_sc2)
+      $("head").append(css_sc3);
+      $("head").append(css_sc4);
+      let classDisplayChat = "d-block";
+      if (skarletConfig.whatsAppNumber) {
+        // Get whatsapp number from script attribute
+        let whatsAppBtn =
+          `<a href="https://wa.me/${skarletConfig.whatsAppNumber}?text=Hola"` +
+          'class="whatsapp d-lg-none" target="_blank"> <i class="fa fa-whatsapp whatsapp-icon"></i></a>';
+        const whatsAppStyles =
+          "<style>" +
+          ".whatsapp {" +
+          "position:fixed;" +
+          "width:53px;" +
+          "height:53px;" +
+          "bottom:10px;" +
+          "right:10px;" +
+          "background-color:#25d366;" +
+          "color:#FFF;" +
+          "border-radius:50px;" +
+          "text-align:center;" +
+          "font-size:35px;" +
+          "z-index:6000;" +
+          "}" +
+          ".whatsapp-icon {" +
+          "color: #FFF;" +
+          "text-decoration: none;" +
+          "margin-top: 9px;" +
+          "}" +
+          "</style>";
+        $("body").append(whatsAppBtn);
+        $("head").append(whatsAppStyles);
+        classDisplayChat = "d-none d-lg-block";
+      }
+
+      const displayStyle =
+        "<style>" +
+        ".d-none {" +
+        "display: none;" +
+        "}" +
+        "@media (min-width: 992px) {" +
+        ".d-lg-block {" +
+        "display: block!important;" +
+        "}" +
+        ".d-lg-none {" +
+        "display: none;" +
+        "}" +
+        ".d-block {" +
+        "display: block;" +
+        "}" +
+        "}" +
+        "</style>";
+      $("head").append(displayStyle);
+
+      //adding chat button
+      let button1 = document.createElement("button");
+      button1.id = "open_chat_w";
+      button1.type = "button";
+      button1.setAttribute("onclick", "open_frame()");
+      button1.setAttribute("class", "btn btn-primary " + classDisplayChat);
+      button1.setAttribute(
+        "style",
+        "background-color: transparent;" +
+          "background: transparent;" +
+          "color: white;" +
+          "padding: 0 0 0 0;" +
+          "border: none;" +
+          "cursor: pointer;" +
+          "position: fixed;" +
+          "z-index: 10000;" +
+          "bottom: 34px;" +
+          "right: 34px;" +
+          "width: 220px; " +
+          "border-radius: 35px; font-size: 20px; line-height: 1.33;"
+      );
+
+      let t_button1 = document.createTextNode("");
+      let chat_icon =
+        '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-chat-quote" viewBox="0 0 16 16" tittle="aaaaaaaaaaaaaa">' +
+        '<path d="M2.678 11.894a1 1 0 0 1 .287.801 10.97 10.97 0 0 1-.398 2c1.395-.323 2.247-.697 2.634-.893a1 1 0 0 1 .71-.074A8.06 8.06 0 0 0 8 14c3.996 0 7-2.807 7-6 0-3.192-3.004-6-7-6S1 4.808 1 8c0 1.468.617 2.83 1.678 3.894zm-.493 3.905a21.682 21.682 0 0 1-.713.129c-.2.032-.352-.176-.273-.362a9.68 9.68 0 0 0 .244-.637l.003-.01c.248-.72.45-1.548.524-2.319C.743 11.37 0 9.76 0 8c0-3.866 3.582-7 8-7s8 3.134 8 7-3.582 7-8 7a9.06 9.06 0 0 1-2.347-.306c-.52.263-1.639.742-3.468 1.105z"/>' +
+        '<path d="M7.066 6.76A1.665 1.665 0 0 0 4 7.668a1.667 1.667 0 0 0 2.561 1.406c-.131.389-.375.804-.777 1.22a.417.417 0 0 0 .6.58c1.486-1.54 1.293-3.214.682-4.112zm4 0A1.665 1.665 0 0 0 8 7.668a1.667 1.667 0 0 0 2.561 1.406c-.131.389-.375.804-.777 1.22a.417.417 0 0 0 .6.58c1.486-1.54 1.293-3.214.682-4.112z"/>' +
+        "asddddddddddddd</svg>";
+      let icon = document.createElement("i");
+      icon.id = "chat_icon";
+
+      let img_button1 = document.createElement("img");
+      img_button1.setAttribute("src", skarletConfig.chatButtonImage);
+      img_button1.setAttribute("style", "width: 220px; float: left;");
+      button1.appendChild(img_button1);
+      button1.appendChild(t_button1);
+      $("body").append(button1);
+
+      //main div
+      let main_div = document.createElement("div");
+      main_div.id = "main_div";
+      // main_div.setAttribute("class", "overflow-auto")
+      main_div.setAttribute(
+        "style",
+        "display: none; width: 470px; " +
+          "height: 560px; bottom: 10px; " +
+          "right: 0px; padding: 12px; " +
+          "position: fixed; z-index: 10000; "
+      );
+
+      // Chats page start --------------------------------------------
+      let chats_div = document.createElement("div");
+      chats_div.id = "chats";
+      chats_div.setAttribute("style", "display: none; height: 550px;"); //show - hide chats window
+      // chats_div.setAttribute("class", "col-md-6")
+
+      let box_chat = document.createElement("div");
+      box_chat.id = "box_chat";
+      box_chat.setAttribute(
+        "class",
+        "box box-primary direct-chat direct-chat-warning"
+      );
+      box_chat.setAttribute(
+        "style",
+        "border: none !important; border-top-left-radius: 20px;border-top-right-radius: 20px;"
+      );
+
+      let div_a = document.createElement("div");
+      div_a.id = "div_a";
+      div_a.setAttribute("class", "row");
+      div_a.setAttribute(
+        "style",
+        "background: linear-gradient(#ff5a00, #ffc701); border-top-left-radius: 20px;border-top-right-radius: 20px; height: 65px;"
+      );
+
+      let img_div_a = document.createElement("img");
+      img_div_a.setAttribute("src", "https://i.ibb.co/WyYZLk5/chat.png");
+
+      img_div_a.setAttribute("class", "col-2 pt-2");
+      let box_chat_title = document.createElement("h3");
+      box_chat_title.id = "box_chat_title";
+      box_chat_title.setAttribute("class", "col pt-3");
+      box_chat_title.setAttribute("style", "color: white; font-weight:200;");
+      let txt_box_chat_title = document.createTextNode("Asistente Virtual");
+      box_chat_title.appendChild(txt_box_chat_title);
+
+      let div_b = document.createElement("div");
+      div_b.id = "div_b";
+      div_b.setAttribute("class", "col-3");
+
+      //buttons replacing lte icons minus and close
+      let minus_button = document.createElement("button");
+      minus_button.id = "minus_button_id";
+      minus_button.setAttribute("onclick", "minus_button_f()");
+      minus_button.setAttribute("class", "btn btn-box-tool");
+      minus_button.setAttribute(
+        "style",
+        "position:absolute; right: 60px; background-color: transparent;"
+      );
+      let minus_icon = document.createElement("i");
+      minus_icon.id = "minus_icon";
+      minus_icon.setAttribute("class", "fa fa-minus");
+      minus_icon.style =
+        "color: white; font-weight:600; margin-top: 19px; margin-left: 12px";
+      minus_button.append(minus_icon);
+
+      div_b.appendChild(minus_button);
+      let close_button = document.createElement("button");
+      close_button.id = "close_button_id";
+      close_button.setAttribute("onclick", "close_button_f()");
+      close_button.setAttribute("class", "btn btn-box-tool");
+      close_button.setAttribute(
+        "style",
+        "background-color: transparent; position:absolute; right: 20px;"
+      );
+      let close_icon = document.createElement("i");
+      close_icon.id = "close_icon";
+      close_button.appendChild(close_icon);
+      // let close_icon_svg = '<svg id="svg_close" style="display: true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-x-circle text-primary" viewBox="0 0 16 16">'+
+      //   '<path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>'+
+      //   '<path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>'+
+      //   '</svg>'
+      let close_icon_svg =
+        "<i class='fa fa-close' style='color: white; font-weight:600; margin-top: 19px; margin-left: 12px'></i>";
+      div_b.appendChild(close_button);
+      let div_box_body = document.createElement("div");
+      div_box_body.id = "box_body";
+      div_box_body.setAttribute("class", "row");
+      div_box_body.setAttribute(
+        "style",
+        "height: 430px; background-color: white"
+      );
+      let div_message_box = document.createElement("div");
+      div_message_box.id = "message_box";
+      div_message_box.setAttribute("class", "direct-chat-messages");
+      div_message_box.setAttribute(
+        "style",
+        "height: 380px; overflow-y: scroll;"
+      );
+
+      let downloadButton =
+        '<button id="downloadChatBtn" onclick="downloadChat()" \
+                            class="btn btn-box-tool" style="background-color: transparent; position:absolute; right: 90px;">\
+                            <i id="close_icon"><i style="color: white; font-weight:600; margin-top: 19px; margin-left: 12px" \
+                            class="fa fa-download"></i></button>';
+
+      let ul_contacts_list = document.createElement("ul");
+      ul_contacts_list.id = "ul_contacts_list";
+      ul_contacts_list.setAttribute("class", "contacts-list");
+      let li_contacts_list = document.createElement("li");
+      li_contacts_list.id = "li_contacts_list";
+      let ahfref_contacts_list = document.createElement("a");
+      ahfref_contacts_list.id = "ahfref_contacts_list";
+      ahfref_contacts_list.setAttribute("href", "#");
+      let image_contacts_list = document.createElement("img");
+      image_contacts_list.id = "image_contacts_list";
+      image_contacts_list.setAttribute("class", "contacts-list-img");
+      image_contacts_list.setAttribute("alt", "User Image");
+      let div_contacts_list_info = document.createElement("div");
+      div_contacts_list_info.id = "div_contacts_list_info";
+      div_contacts_list_info.setAttribute("class", "contacts-list-info");
+      let span_contacts_list_info = document.createElement("span");
+      span_contacts_list_info.id = "contacts-list-name";
+      span_contacts_list_info.setAttribute("class", "contacts-list-name");
+      let small_contacts_list_info = document.createElement("div");
+      small_contacts_list_info.setAttribute(
+        "class",
+        "contacts-list-date pull-right"
+      );
+      let t_small_contacts_list_info = document.createTextNode("2/28/2015");
+      small_contacts_list_info.appendChild(t_small_contacts_list_info);
+      span_contacts_list_info.appendChild(small_contacts_list_info);
+      div_contacts_list_info.appendChild(span_contacts_list_info);
+      ahfref_contacts_list.appendChild(image_contacts_list);
+      ahfref_contacts_list.appendChild(div_contacts_list_info);
+      li_contacts_list.appendChild(ahfref_contacts_list);
+      ul_contacts_list.appendChild(li_contacts_list);
+      let div_box_footer = document.createElement("div");
+      div_box_footer.setAttribute("class", "row");
+      div_box_footer.setAttribute(
+        "style",
+        "width: 470px; margin: 0 -1px 0 -11px"
+      );
+      div_box_footer.setAttribute("id", "box_footer");
+      let form_box_footer = document.createElement("form");
+      form_box_footer.setAttribute("action", "#");
+      form_box_footer.setAttribute("method", "post");
+      form_box_footer.setAttribute("id", "box_footer_form");
+      form_box_footer.setAttribute("class", "column-12");
+      form_box_footer.setAttribute("style", "padding: 0 0 0 0;");
+      let div_input_box_footer = document.createElement("div");
+      div_input_box_footer.setAttribute("class", "input-group");
+      div_input_box_footer.setAttribute(
+        "style",
+        "flex-wrap: nowrap; align-items: flex-start;"
+      );
+      let input_box_footer_user = document.createElement("input");
+      input_box_footer_user.setAttribute("type", "hidden");
+      input_box_footer_user.setAttribute("id", "id_user");
+      let input_box_footer_id = document.createElement("input");
+      input_box_footer_id.setAttribute("type", "hidden");
+      input_box_footer_id.setAttribute("id", "id_recipient");
+      let input_box_footer_recip = document.createElement("input");
+      input_box_footer_recip.setAttribute("type", "hidden");
+      input_box_footer_recip.setAttribute("id", "recipient");
+      let input_box_footer_text = document.createElement("input");
+      input_box_footer_text.id = "input_message";
+      input_box_footer_text.setAttribute("type", "text");
+      input_box_footer_text.setAttribute("name", "message");
+      input_box_footer_text.setAttribute(
+        "placeholder",
+        "Escribe aquí tu mensaje"
+      );
+      input_box_footer_text.setAttribute("class", "form-control");
+      let input_box_footer_contact = document.createElement("input");
+      input_box_footer_contact.setAttribute("type", "hidden");
+      input_box_footer_contact.setAttribute("id", "id_contact");
+      let span_box_footer_text = document.createElement("span");
+      span_box_footer_text.setAttribute("class", "input-group-btn");
+      let span_box_footer_text2 = document.createElement("span");
+      span_box_footer_text2.setAttribute("class", "input-group-btn");
+      let button_att_box_footer = document.createElement("button");
+      button_att_box_footer.setAttribute("type", "button");
+      button_att_box_footer.setAttribute("id", "button_button_chat");
+      button_att_box_footer.setAttribute(
+        "class",
+        "btn btn-secondary btn-sm pull-right"
+      );
+      button_att_box_footer.setAttribute(
+        "style",
+        "margin-left: 0px; height: 34px; background-color: white; color: black; border: 1px solid grey;"
+      );
+      let icon_button_att_box_footer = document.createElement("i");
+      icon_button_att_box_footer.setAttribute("class", "fa fa-fw fa-paperclip");
+      button_att_box_footer.appendChild(icon_button_att_box_footer);
+      let button_send_box_footer = document.createElement("button");
+      button_send_box_footer.setAttribute("type", "button");
+      button_send_box_footer.setAttribute("id", "send_chat_button");
+      button_send_box_footer.setAttribute(
+        "onclick",
+        "alert('cambiar por fuincion')"
+      );
+      button_send_box_footer.setAttribute(
+        "class",
+        "btn btn-primary pull-right"
+      );
+      button_send_box_footer.setAttribute(
+        "style",
+        "margin-left: 0px; height: 34px; background-color: white; color: black; border: 1px solid grey;"
+      );
+      let icon_send_button = document.createElement("i");
+      icon_send_button.setAttribute("class", "fa fa-fw fa-send-o");
+      button_send_box_footer.appendChild(icon_send_button);
+
+      span_box_footer_text2.appendChild(button_send_box_footer);
+      span_box_footer_text.appendChild(button_att_box_footer);
+
+      div_input_box_footer.appendChild(input_box_footer_contact);
+      div_input_box_footer.appendChild(input_box_footer_user);
+      div_input_box_footer.appendChild(input_box_footer_id);
+      div_input_box_footer.appendChild(input_box_footer_recip);
+      div_input_box_footer.appendChild(input_box_footer_text);
+      div_input_box_footer.appendChild(span_box_footer_text2);
+      div_input_box_footer.appendChild(span_box_footer_text);
+      form_box_footer.appendChild(div_input_box_footer);
+
+      let div_back_to_b = document.createElement("div");
+      div_back_to_b.setAttribute("id", "back_to_b_div");
+      let a_div_back_to_b = document.createElement("a");
+      a_div_back_to_b.setAttribute("href", "#");
+      a_div_back_to_b.setAttribute("onclick", "go_to_begining()");
+      let t_a_div_back_to_b = document.createTextNode(
+        " Volver al inicio del menú"
+      );
+
+      // enable once chatbot gets ready to activate back to main menu
+      // a_div_back_to_b.appendChild(t_a_div_back_to_b)
+      div_back_to_b.appendChild(a_div_back_to_b);
+
+      form_box_footer.appendChild(div_input_box_footer);
+      form_box_footer.appendChild(div_back_to_b);
+
+      div_box_footer.appendChild(form_box_footer);
+      div_box_body.appendChild(div_message_box);
+      // div_box_body.appendChild(div_direct_chat_contacts)
+      div_a.appendChild(img_div_a);
+      div_a.appendChild(box_chat_title);
+      div_a.appendChild(div_b);
+
+      div_box_body.appendChild(div_message_box);
+      box_chat.appendChild(div_a);
+      box_chat.appendChild(div_box_body);
+      box_chat.appendChild(div_box_footer);
+      chats_div.appendChild(box_chat);
+      // Chats page end --------------------------------------------
+      // Visitor page start --------------------------------------------
+      let div_form_visitor = document.createElement("div");
+      div_form_visitor.id = "form_visitor";
+      // div_form_visitor.setAttribute("class", "col-md-12") validate
+      div_form_visitor.setAttribute(
+        "style",
+        " position: absolute; bottom:0; z-index: 4500"
+      );
+      let div_box_info_visitor = document.createElement("div");
+      div_box_info_visitor.id = "div_box_info_visitor";
+      div_box_info_visitor.setAttribute("class", "container");
+      div_box_info_visitor.setAttribute(
+        "style",
+        "background-color: white; border: none !important; border-top-left-radius: 20px;border-top-right-radius: 20px; height: 560px;"
+      );
+      let div_box_header_visitor = document.createElement("div");
+      div_box_header_visitor.id = "div_box_header_visitor";
+      div_box_header_visitor.setAttribute("class", "row");
+      div_box_header_visitor.setAttribute(
+        "style",
+        "height: 70px; background: linear-gradient(#ff5a00, #ffc701); border-top-left-radius: 20px;border-top-right-radius: 20px;"
+      );
+      let img_div_box_header_visitor = document.createElement("img");
+      img_div_box_header_visitor.id = "img_div_box_header_visitor";
+      img_div_box_header_visitor.setAttribute("class", "col-2 mx-1 my-1");
+      img_div_box_header_visitor.setAttribute(
+        "src",
+        "https://i.ibb.co/WyYZLk5/chat.png"
+      );
+      let header_box_header_visitor = document.createElement("h3");
+      header_box_header_visitor.id = "header_box_header_visitor";
+      header_box_header_visitor.setAttribute("class", "col-auto mx-1 mt-4");
+      header_box_header_visitor.setAttribute(
+        "style",
+        "color:White; font-weight:400; font-size:18px; margin-top: 19px; margin-left: 12px"
+      );
+      let t_header_box_header_visitor = document.createTextNode(
+        "Asistente Virtual UNAD"
+      );
+      header_box_header_visitor.appendChild(t_header_box_header_visitor);
+      let initial_minus_button = document.createElement("button");
+      initial_minus_button.id = "initial_minus_button_id";
+      initial_minus_button.setAttribute("onclick", "minus_button_f()");
+      initial_minus_button.setAttribute("class", "btn btn-box-tool col-2 ms-5");
+      initial_minus_button.setAttribute(
+        "style",
+        "position:absolute; right: 40px; background-color: transparent;"
+      );
+      let = initial_minus_button_icon = document.createElement("i");
+      initial_minus_button_icon.id = "initial_minus_i_button_id";
+      initial_minus_button_icon.setAttribute("class", "fa fa-minus");
+      initial_minus_button_icon.style =
+        "color: white; font-weight:600; margin-top: 19px; margin-left: 12px";
+      initial_minus_button.append(initial_minus_button_icon);
+      div_box_header_visitor.appendChild(img_div_box_header_visitor);
+      div_box_header_visitor.appendChild(header_box_header_visitor);
+      div_box_header_visitor.appendChild(initial_minus_button);
+
+      let form_visitor = document.createElement("form");
+      form_visitor.setAttribute("action", "");
+      form_visitor.setAttribute("class", "form-vertical");
+      let div_form_box_body = document.createElement("div");
+      div_form_box_body.id = "div_form_user_data";
+      div_form_box_body.setAttribute("class", "box-body");
+      div_form_box_body.setAttribute(
+        "style",
+        "margin-top: -12px; padding: 12px"
+      );
+
+      //---------------
+      let div_form_form_group = document.createElement("div");
+      div_form_form_group.setAttribute("class", "form-group");
+      div_form_form_group.setAttribute("style", "margin-bottom: 2px");
+
+      let label_form_form_group = document.createElement("label");
+      label_form_form_group.setAttribute("class", "col-sm-6 control-label");
+      label_form_form_group.setAttribute("style", "text-align: left");
+      let t_label_form_form_group =
+        document.createTextNode("Nombre y apellido");
+      label_form_form_group.appendChild(t_label_form_form_group);
+
+      let div_col_form_group = document.createElement("div");
+      div_col_form_group.setAttribute("class", "col-sm-12");
+
+      let input_form_group = document.createElement("input");
+      input_form_group.id = "name_visitor";
+      input_form_group.setAttribute("type", "text");
+      input_form_group.setAttribute("class", "form-control");
+      input_form_group.setAttribute("name", "name");
+      input_form_group.setAttribute("placeholder", "Nombre y apellido");
+      input_form_group.setAttribute("required", "true");
+
+      div_col_form_group.appendChild(input_form_group);
+      div_form_form_group.appendChild(label_form_form_group);
+      div_form_form_group.appendChild(div_col_form_group);
+
+      //---------------
+      let div_form_form_group_2 = document.createElement("div");
+      div_form_form_group_2.setAttribute("class", "container");
+      div_form_form_group_2.setAttribute("style", "margin-bottom: 0px");
+
+      let div_type_doc_wrap = document.createElement("div");
+      div_type_doc_wrap.setAttribute("style", "white-space:nowrap;");
+      div_type_doc_wrap.setAttribute("class", "row");
+
+      let div_2col_type = document.createElement("div");
+      div_2col_type.setAttribute("class", "col-3 px-0");
+      div_2col_type.setAttribute("style", "padding:0;");
+      let label_div_2col_type = document.createElement("label");
+      label_div_2col_type.setAttribute("class", "control-label");
+      label_div_2col_type.setAttribute(
+        "style",
+        "text-align: left; white-space: nowrap;"
+      );
+      let txt_for_label_div_2col_type = document.createTextNode("Tipo");
+      label_div_2col_type.appendChild(txt_for_label_div_2col_type);
+
+      let div_col1_type = document.createElement("div");
+      div_col1_type.setAttribute("class", "col-sm-12");
+      div_col1_type.setAttribute("style", "padding:0; ");
+
+      let select_div_col1_type = document.createElement("select");
+      select_div_col1_type.setAttribute("name", "tipo_doc");
+      select_div_col1_type.setAttribute("id", "tipo_doc");
+      select_div_col1_type.setAttribute("class", "form-control");
+
+      let option_a_select_div_col1_type = document.createElement("option");
+      option_a_select_div_col1_type.setAttribute("value", "------");
+      let text_option_a_select_div_col1_type =
+        document.createTextNode("------");
+      option_a_select_div_col1_type.appendChild(
+        text_option_a_select_div_col1_type
+      );
+
+      let option_b_select_div_col1_type = document.createElement("option");
+      option_b_select_div_col1_type.setAttribute("value", "CC");
+      let text_option_b_select_div_col1_type = document.createTextNode(
+        "Cédula de Ciudadanía"
+      );
+      option_b_select_div_col1_type.appendChild(
+        text_option_b_select_div_col1_type
+      );
+
+      let option_c_select_div_col1_type = document.createElement("option");
+      option_c_select_div_col1_type.setAttribute("value", "CE");
+      let text_option_c_select_div_col1_type = document.createTextNode(
+        "Cédula de Extranjería"
+      );
+      option_c_select_div_col1_type.appendChild(
+        text_option_c_select_div_col1_type
+      );
+
+      let option_d_select_div_col1_type = document.createElement("option");
+      option_d_select_div_col1_type.setAttribute("value", "TI");
+      let text_option_d_select_div_col1_type = document.createTextNode(
+        "Tarjeta de Identidad"
+      );
+      option_d_select_div_col1_type.appendChild(
+        text_option_d_select_div_col1_type
+      );
+
+      let option_e_select_div_col1_type = document.createElement("option");
+      option_e_select_div_col1_type.setAttribute("value", "PP");
+      let text_option_e_select_div_col1_type =
+        document.createTextNode("Pasaporte");
+      option_e_select_div_col1_type.appendChild(
+        text_option_e_select_div_col1_type
+      );
+
+      let div_2col_doc = document.createElement("div");
+      div_2col_doc.setAttribute("class", "col-sm-9 ps-3");
+      div_2col_doc.setAttribute("style", "padding:0;");
+      let label_div_2col_doc = document.createElement("label");
+      label_div_2col_doc.setAttribute("class", "col-sm-6 control-label");
+      label_div_2col_doc.setAttribute(
+        "style",
+        "text-align: left; white-space: nowrap;"
+      );
+      let txt_for_label_div_2col_doc =
+        document.createTextNode("Número Documento");
+      label_div_2col_doc.appendChild(txt_for_label_div_2col_doc);
+
+      let label_form_form_group_2 = document.createElement("label");
+      label_form_form_group_2.setAttribute("class", "col-sm-6 control-label");
+      label_form_form_group_2.setAttribute(
+        "style",
+        "text-align: left; white-space: nowrap;"
+      );
+      let t_label_form_form_group_2 = document.createTextNode(
+        "Documento de Identidad"
+      );
+      label_form_form_group_2.appendChild(t_label_form_form_group_2);
+
+      let div_col_form_group_2 = document.createElement("div");
+      div_col_form_group_2.setAttribute("class", "col-sm-12");
+
+      let input_form_group2 = document.createElement("input");
+      input_form_group2.id = "visitor_id";
+      input_form_group2.setAttribute("type", "number");
+      input_form_group2.setAttribute("class", "form-control");
+      input_form_group2.setAttribute("name", "visitor_id");
+      input_form_group2.setAttribute("placeholder", "Número Documento");
+      input_form_group2.setAttribute("required", "true");
+
+      select_div_col1_type.appendChild(option_a_select_div_col1_type);
+      select_div_col1_type.appendChild(option_b_select_div_col1_type);
+      select_div_col1_type.appendChild(option_c_select_div_col1_type);
+      select_div_col1_type.appendChild(option_d_select_div_col1_type);
+      select_div_col1_type.appendChild(option_e_select_div_col1_type);
+      div_col1_type.appendChild(select_div_col1_type);
+      div_2col_type.appendChild(label_div_2col_type);
+      div_2col_type.appendChild(div_col1_type);
+
+      div_col_form_group_2.appendChild(input_form_group2);
+      div_2col_doc.appendChild(label_form_form_group_2);
+      div_2col_doc.appendChild(div_col_form_group_2);
+
+      div_type_doc_wrap.appendChild(div_2col_type);
+      div_type_doc_wrap.appendChild(div_2col_doc);
+
+      div_form_form_group_2.appendChild(div_type_doc_wrap);
+      //---------------
+      let div_form_form_group_3 = document.createElement("div");
+      div_form_form_group_3.setAttribute("class", "form-group");
+      div_form_form_group_3.setAttribute("style", "margin-bottom: 0px");
+
+      let label_form_form_group_3 = document.createElement("label");
+      label_form_form_group_3.setAttribute("class", "col-sm-6 control-label");
+      label_form_form_group_3.setAttribute("style", "text-align: left");
+      let t_label_form_form_group_3 = document.createTextNode("Email");
+      label_form_form_group_3.appendChild(t_label_form_form_group_3);
+
+      let div_col_form_group_3 = document.createElement("div");
+      div_col_form_group_3.setAttribute("class", "col-sm-12");
+
+      let input_form_group3 = document.createElement("input");
+      input_form_group3.id = "email_visitor";
+      input_form_group3.setAttribute("type", "email");
+      input_form_group3.setAttribute("class", "form-control");
+      input_form_group3.setAttribute("name", "email");
+      input_form_group3.setAttribute("placeholder", "Ej: correo@dominio.com");
+      input_form_group3.setAttribute("required", "true");
+
+      div_col_form_group_3.appendChild(input_form_group3);
+      div_form_form_group_3.appendChild(label_form_form_group_3);
+      div_form_form_group_3.appendChild(div_col_form_group_3);
+
+      //---------------
+      let div_form_form_group_4 = document.createElement("div");
+      div_form_form_group_4.setAttribute("class", "form-group");
+      div_form_form_group_2.setAttribute("style", "margin-bottom: 0px");
+
+      let label_form_form_group_4 = document.createElement("label");
+      label_form_form_group_4.setAttribute("class", "col-sm-6 control-label");
+      label_form_form_group_4.setAttribute("style", "text-align: left");
+      let t_label_form_form_group_4 = document.createTextNode("Celular");
+      label_form_form_group_4.appendChild(t_label_form_form_group_4);
+
+      let div_col_form_group_4 = document.createElement("div");
+      div_col_form_group_4.setAttribute("class", "col-sm-12");
+
+      let input_form_group4 = document.createElement("input");
+      input_form_group4.id = "phone_visitor";
+      input_form_group4.setAttribute("type", "text");
+      input_form_group4.setAttribute("class", "form-control");
+      input_form_group4.setAttribute("name", "Phone");
+      input_form_group4.setAttribute("placeholder", "Número Ej: 3111234567");
+      input_form_group4.setAttribute("required", "true");
+
+      div_col_form_group_4.appendChild(input_form_group4);
+      div_form_form_group_4.appendChild(label_form_form_group_4);
+      div_form_form_group_4.appendChild(div_col_form_group_4);
+
+      //--------------- div zones
+      let div_form_form_group_4_2 = document.createElement("div");
+      div_form_form_group_4_2.setAttribute("class", "form-group");
+      div_form_form_group_4_2.setAttribute("style", "margin-bottom: 0px");
+
+      let label_form_form_group_4_2 = document.createElement("label");
+      label_form_form_group_4_2.setAttribute("class", "col-sm-6 control-label");
+      label_form_form_group_4_2.setAttribute("style", "text-align: left");
+      let t_label_form_form_group_4_2 = document.createTextNode("Región");
+      label_form_form_group_4_2.appendChild(t_label_form_form_group_4_2);
+
+      let div_col_form_group_4_2 = document.createElement("select");
+      div_col_form_group_4_2.setAttribute("name", "zone");
+      div_col_form_group_4_2.setAttribute("id", "zone");
+      div_col_form_group_4_2.setAttribute("class", "form-control");
+
+      let option_a_div_col_form_group_4_2 = document.createElement("option");
+      option_a_div_col_form_group_4_2.setAttribute("value", "0");
+      let text_option_a_div_col_form_group_4_2 = document.createTextNode(
+        "Por favor selecciona una Región"
+      );
+      option_a_div_col_form_group_4_2.appendChild(
+        text_option_a_div_col_form_group_4_2
+      );
+
+      div_col_form_group_4_2.appendChild(option_a_div_col_form_group_4_2);
+
+      fetch(`${skarletConfig.paramApiUrl}/domains/region_unad/`)
+        .then((response) => response.json())
+        .then((data) => {
+          for (i in data) {
+            let option_a_div_col_form_group_4_2 =
+              document.createElement("option");
+            option_a_div_col_form_group_4_2.setAttribute(
+              "value",
+              `${data[i].id}`
+            );
+            let text_option_a_div_col_form_group_4_2 = document.createTextNode(
+              `${data[i].name}`
+            );
+            option_a_div_col_form_group_4_2.appendChild(
+              text_option_a_div_col_form_group_4_2
+            );
+            div_col_form_group_4_2.appendChild(option_a_div_col_form_group_4_2);
+          }
+        });
+
+      div_form_form_group_4_2.appendChild(label_form_form_group_4_2);
+      div_form_form_group_4_2.appendChild(div_col_form_group_4_2);
+
+      //---------------
+
+      let div_form_form_group_5 = document.createElement("div");
+      div_form_form_group_5.setAttribute("class", "checkbox-wrapper");
+      div_form_form_group_5.setAttribute(
+        "style",
+        "margin-top: 12px; font-size: 12px; display: flex; align-items: center; line-height: 13px;"
+      );
+
+      let input_form_group5 = document.createElement("input");
+      input_form_group5.setAttribute("id", "tac_check");
+      input_form_group5.setAttribute("name", "tac_check");
+      input_form_group5.setAttribute("type", "checkbox");
+      input_form_group5.setAttribute("onclick", "show_popover()");
+
+      let policy_link = document.createElement("a");
+      policy_link.href =
+        "https://sgeneral.unad.edu.co/images/documentos/capsulas/2019/POLI_TRAT_DATO_PERS_UNAD.pdf";
+      policy_link.target = "_blank";
+      policy_link.innerHTML =
+        "Política de Tratamiento de Datos Personales de la UNAD ";
+      let policy_link_text_a = document.createTextNode(
+        "Al ingresar aceptas la "
+      );
+      let policy_link_text_b = document.createTextNode(
+        " y autorizas el tratamiento de los datos que proporciones a través de este formulario y durante la asesoría."
+      );
+
+      let p_policy = document.createElement("p");
+      p_policy.id = "label_tyc";
+      p_policy.for = "tac_check";
+      p_policy.style = "margin-left: 5px";
+      p_policy.appendChild(policy_link_text_a);
+      p_policy.appendChild(policy_link);
+      p_policy.appendChild(policy_link_text_b);
+
+      div_form_form_group_5.appendChild(input_form_group5);
+      div_form_form_group_5.appendChild(p_policy);
+      //---------------
+
+      let div_footer_form = document.createElement("div");
+      div_footer_form.setAttribute("class", "box-footer");
+
+      let button_footer_form = document.createElement("button");
+      button_footer_form.id = "join_button";
+      button_footer_form.setAttribute("type", "button");
+      button_footer_form.setAttribute("class", "btn btn-warning pull-right");
+
+      button_footer_form.setAttribute(
+        "style",
+        "background: linear-gradient(#ff5a00, #ffc701); color:White; font-weight:600;"
+      );
+      button_footer_form.setAttribute("disabled", true);
+
+      let t_button_footer_form = document.createTextNode("ENTRAR");
+
+      button_footer_form.appendChild(t_button_footer_form);
+
+      div_footer_form.appendChild(button_footer_form); // box-footer
+
+      div_form_box_body.appendChild(div_form_form_group);
+      div_form_box_body.appendChild(div_form_form_group_2);
+      div_form_box_body.appendChild(div_form_form_group_3);
+      div_form_box_body.appendChild(div_form_form_group_4);
+      div_form_box_body.appendChild(div_form_form_group_4_2);
+      div_form_box_body.appendChild(div_form_form_group_5);
+
+      form_visitor.appendChild(div_form_box_body);
+      form_visitor.appendChild(div_footer_form);
+
+      let p_box_header_visitor = document.createElement("p");
+      let text_p_box_header_visitor = document.createTextNode(
+        "Antes de ofrecerte una atención, \
+                                                              necesitamos conocer algo más de ti"
+      );
+      p_box_header_visitor.appendChild(text_p_box_header_visitor);
+      p_box_header_visitor.setAttribute(
+        "style",
+        "font-size: 12px; text-align: center; margin-top: 5px; margin-bottom: 0px;"
+      );
+
+      div_box_info_visitor.appendChild(div_box_header_visitor);
+      div_box_info_visitor.appendChild(p_box_header_visitor);
+      div_box_info_visitor.appendChild(form_visitor); //id form_visitor
+
+      div_form_visitor.append(div_box_info_visitor);
+      // Visitor page end --------------------------------------------
+      // div upload start --------------------------------------------
+      let div_upload = document.createElement("div");
+      div_upload.id = "div_chat_file_visitor";
+      div_upload.setAttribute("style", "display: none");
+      let form_upload = document.createElement("form");
+      form_upload.setAttribute("action", "#type your action here");
+      form_upload.setAttribute("method", "POST");
+      form_upload.setAttribute("enctype", "multipart/form-data");
+      form_upload.setAttribute("name", "myForm");
+      t_form_upload = document.createTextNode(
+        "{% csrf_token %}{{ form.as_p }}"
+      );
+      form_upload.appendChild(t_form_upload);
+      let button_upload = document.createElement("button");
+      button_upload.id = "yourBtn";
+      button_upload.setAttribute("type", "button");
+      button_upload.setAttribute("class", "btn btn-primary");
+      button_upload.setAttribute("onclick", "chat_getfile()");
+      t_button_upload = document.createTextNode("click to upload");
+      button_upload.appendChild(t_button_upload);
+      let div2_upload = document.createElement("div");
+      div2_upload.setAttribute(
+        "style",
+        "height: 0px;width: 0px; overflow:hidden;"
+      );
+      let input_upload = document.createElement("input");
+      input_upload.id = "upfile";
+      input_upload.setAttribute("type", "file");
+      input_upload.setAttribute("value", "Submit");
+      input_upload.setAttribute("name", "documenttest");
+      input_upload.setAttribute("onchange", "sub(this)");
+
+      div2_upload.appendChild(input_upload);
+      form_upload.appendChild(button_upload);
+      form_upload.appendChild(div2_upload);
+      div_upload.appendChild(form_upload);
+
+      // div upload stop --------------------------------------------
+      main_div.appendChild(div_upload);
+      main_div.appendChild(chats_div);
+      main_div.appendChild(div_form_visitor);
+      $("body").append(main_div);
+      // $("#minus_icon").append(minus_icon_svg)
+      $("#close_icon").append(close_icon_svg);
+
+      var set_href_tyc = document.getElementById("tac_check");
+      set_href_tyc.href = "google.com";
+
+      // ------------------------------- FUNCTIONS -------------------------------
+      const timeout_value = 10 * 60 * 1000;
+
+      open_frame = function () {
+        // alert("Modified_2")
+        //let open_close = document.getElementById('main_div').style.display
+        document.getElementById("div_b").innerHTML += downloadButton;
+        var screen_width = window.innerWidth;
+
+        if (screen_width <= 500) {
+          var new_width = parseInt(screen_width) + parseInt(18);
+          var new_width_str = new_width + "px";
+          document.getElementById("main_div").style.width = new_width_str;
+        }
+
+        document.getElementById("open_chat_w").style.display = "none";
+
+        var c_validation_result = cookie_validation();
+
+        if (document.getElementById("main_div").style.display == "none") {
+          document.getElementById("main_div").style.display = "block";
+
+          if (c_validation_result == "not_found") {
+            console.log("not_found pass");
+          } else {
+            socket = new ReconnectingWebSocket(ws_path, [], options);
+            const cookieData = c_validation_result.split("|");
+            if (
+              !cookieData[0] ||
+              cookieData[0] == "undefined" ||
+              !cookieData[1] ||
+              cookieData[1] == "undefined" ||
+              !cookieData[2] ||
+              cookieData[2] == "undefined" ||
+              !cookieData[3] ||
+              cookieData[3] == "undefined" ||
+              !cookieData[4] ||
+              cookieData[4] == "undefined" ||
+              !cookieData[5] ||
+              cookieData[5] == "undefined" ||
+              !cookieData[6] ||
+              cookieData[6] == "undefined"
+            ) {
+              return false;
+            }
+            socket.onopen = () => {
+              var message_box_j_validator = $("[id*=message_box]").attr("id");
+              if (message_box_j_validator == "message_box-chatbot") {
+                console.log("pass found");
+              } else {
+                socket.send(
+                  JSON.stringify({
+                    command: "retrieve_visitor_history",
+                    name_visitor: cookieData[0],
+                    visitor_id: cookieData[1],
+                    email_visitor: cookieData[2],
+                    phone: cookieData[3],
+                    id_contact: cookieData[4],
+                    time_stamp: cookieData[6],
+                  })
+                );
+              }
+
+              $("#name_visitor").val(cookieData[0]);
+              $("#visitor_id").val(cookieData[1]);
+              $("#email_visitor").val(cookieData[2]);
+              $("#phone_visitor").val(cookieData[3]);
+              $("#id_contact").val(cookieData[4]);
+              $("#tipo_doc").val(cookieData[7]);
+              $("#zone").val(cookieData[8]);
+              document.getElementById("join_button").disabled = false;
+              $("#join_button").click();
+            };
+          }
+        } else {
+          document.getElementById("main_div").style.display = "none";
+        }
+      };
+
+      cookie_validation = function () {
+        var decodedCookie = decodeURIComponent(document.cookie);
+        var ca = decodedCookie.split(";");
+        var cookie_ws = "not_found";
+        var flag = false;
+        for (i in ca) {
+          var cb = ca[i].split("=");
+          var check = cb[0];
+          if (check.trim() == "cookie_ws" && !flag) {
+            var cookie_ws = cb[1];
+            flag = true;
+          }
+        }
+        return cookie_ws;
+      };
+      cookie_validation2 = function () {
+        var decodedCookie = decodeURIComponent(document.cookie);
+        var ca = decodedCookie.split(";");
+        var cookie_agent = "not_found";
+        var flag = false;
+        for (i in ca) {
+          var cb = ca[i].split("=");
+          var check = cb[0];
+          if (check.trim() == "cookie_agent" && !flag) {
+            var cookie_agent = cb[1];
+            flag = true;
+          }
+        }
+        return cookie_agent;
+      };
+
+      set_cookie = function (
+        co_name,
+        name_visitor,
+        visitor_id,
+        email,
+        phone,
+        id_contact,
+        is_visitor,
+        visitor_id_type,
+        zone
+      ) {
+        var d = new Date();
+        // hora actual en formato datetime
+        var p = new Date().toLocaleString();
+        var cname = co_name;
+        var cookieValue =
+          name_visitor + "|" + visitor_id + "|" + email + "|" + phone + "|";
+        cookieValue +=
+          id_contact +
+          "|" +
+          is_visitor +
+          "|" +
+          p +
+          "|" +
+          visitor_id_type +
+          "|" +
+          zone;
+        d.setTime(d.getTime() + timeout_value);
+        var expires = "expires=" + d.toUTCString();
+        document.cookie = cname + "=" + cookieValue + ";" + expires;
+      };
+
+      delete_cookie = function (co_name) {
+        var d = new Date();
+        var cname = co_name;
+        var cvalue = "";
+        d.setTime(d.getTime() + 0);
+        var expires = "expires=" + d.toUTCString();
+        document.cookie = cname + "=" + cvalue + ";" + expires;
+      };
+
+      /**
+       * Restart the timeout
+       */
+      function restartLastActive() {
+        localStorage.setItem("lastActive", Date.now());
+        const cookieAgent = cookie_validation();
+        const cdata =
+          cookieAgent == "not_found" ? Array(0) : cookieAgent.split("|");
+        const nameVisitor = $("#name_visitor").val() || cdata[0];
+        const visitorId = $("#visitor_id").val() || cdata[1];
+        const email = $("#email_visitor").val() || cdata[2];
+        const phone = $("#phone_visitor").val() || cdata[3];
+        const contactId = $("#id_contact").val() || cdata[4];
+        const iVisitor = "True";
+        const docType = document.getElementById("tipo_doc").value || cdata[7];
+        const zone = document.getElementById("zone").value || cdata[8];
+        const cookieData = [
+          nameVisitor,
+          visitorId,
+          email,
+          phone,
+          contactId,
+          iVisitor,
+          docType,
+          zone,
+        ];
+        set_cookie("cookie_ws", ...cookieData);
+        reconnectionsMade = 0;
+        return cookieData;
+      }
+      /** Delete last active */
+      function deleteLastActive() {
+        localStorage.removeItem("lastActive");
+      }
+      /** Check if the user is inactive */
+      function isInactive() {
+        var lastActive = localStorage.getItem("lastActive");
+        if (lastActive === null) {
+          return true;
+        }
+        var diff = Date.now() - lastActive;
+        return diff > timeout_value;
+      }
+      /**Clear chat */
+      function clearChat(clearFields = true) {
+        if (clearFields) {
+          $("#send_chat_button").attr("onclick", "button_send_message_bot()");
+          $("#name_visitor").val("");
+          $("#visitor_id").val("");
+          $("#email_visitor").val("");
+          $("#phone_visitor").val("");
+          $("#id_contact").val("");
+          $("#tipo_doc").val("");
+          $("#zone").val("");
+          $("#id_recipient").val("");
+        }
+        $("#chats").hide();
+        $("#form_visitor").show();
+        const messageBoxId = $("[id*=message_box]").attr("id");
+        document.getElementById(messageBoxId).setAttribute("id", "message_box");
+        document.getElementById("message_box").innerHTML = "";
+        delete_cookie("cookie_ws");
+        delete_cookie("cookie_agent");
+        deleteLastActive();
+        reconnectionsMade = 2;
+      }
+
+      let show_inputmsg_on_bot = false;
+      window.setInterval(myCallback, 2000);
+      function myCallback() {
+        var sendbttn_actual_f = document
+          .getElementById("send_chat_button")
+          .getAttribute("onclick");
+        var footer_div = document.getElementById("box_footer_form");
+        if (show_inputmsg_on_bot) {
+          if (sendbttn_actual_f == "button_send_message()") {
+            footer_div.style.display = "block";
+          } else {
+            footer_div.style.display = "none";
+          }
+        } else {
+          footer_div.style.display = "block";
+        }
+        const id_contact = $("#id_contact").val();
+        var c_validation_result = cookie_validation();
+        if (c_validation_result == "not_found" && isInactive()) {
+          var message =
+            "La ventana del cliente ha sido cerrada debido a inactividad, por favor tipificar";
+          var from_visitor = "true";
+          if (typeof socket !== "undefined" && Boolean(id_contact)) {
+            socket.send(
+              JSON.stringify({
+                command: "send_message",
+                id_recipient: $("#id_recipient").val(),
+                recipient: $("#recipient").val(),
+                id_user: $("#id_user").val(),
+                is_visitor: "True",
+                from_visitor: from_visitor,
+                message: message,
+                id_contact: id_contact,
+                message_type: "close",
+              })
+            );
+            socket.close();
+          }
+          document.getElementById("box_chat_title").innerText =
+            "Asistente Virtual";
+          clearChat(false);
+          // $(message_box_j_validator).attr("id", "message_box");
+        }
+        if ($("#box_hold").length > 0) {
+          go_to_agent();
+        }
+      }
+
+      minus_button_f = function () {
+        $("#open_chat_w").click();
+        document.getElementById("open_chat_w").style.display = "block";
+      };
+
+      close_button_f = function () {
+        let ans = confirm("¿Are you sure you want to close this window?");
+        var id_contact = $("#id_contact").val();
+        if (ans == true) {
+          var message = "Chat window was closed by customer";
+          var from_visitor = "true";
+          socket.send(
+            JSON.stringify({
+              command: "send_message",
+              id_recipient: $("#id_recipient").val(),
+              recipient: $("#recipient").val(),
+              id_user: $("#id_user").val(),
+              is_visitor: "True",
+              from_visitor: from_visitor,
+              message: message,
+              id_contact: id_contact,
+              message_type: "close",
+            })
+          );
+
+          clearChat();
+          if ($("#box_hold").length > 0) {
+            $("#box_hold").remove();
+          }
+          socket.close();
+        }
+      };
+
+      close_button_wo_message = function () {
+        clearChat();
+        if ($("#box_hold").length > 0) {
+          $("#box_hold").remove();
+        }
+      };
+
+      survey_send_message = function () {
+        var saved_survey_data = $("#survey_data").val();
+        var split_surv_data = saved_survey_data.split("|");
+        var message = $("#input_message")[0].emojioneArea.getText();
+        var from_visitor = "true";
+        print_message(
+          $("#id_recipient").val(),
+          $("#recipient").val(),
+          $("#id_user").val(),
+          "Survey",
+          from_visitor,
+          message
+        );
+
+        $("div.emojionearea-editor").text("");
+        socket.send(
+          JSON.stringify({
+            command: split_surv_data[0],
+            id_chat_ws: split_surv_data[1],
+            counter_survey_q: parseInt(split_surv_data[2]),
+            message: message,
+            id_contact: $("#id_contact").val(),
+            id_survey: parseInt(split_surv_data[3]),
+          })
+        );
+      };
+
+      $("#button_button_chat").click(function (event) {
+        document.getElementById("upfile").click();
+      });
+
+      $("#join_button").click(function (event) {
+        var name_visitor = $("#name_visitor").val();
+        var visitor_id = $("#visitor_id").val();
+        var email = $("#email_visitor").val();
+        var phone = $("#phone_visitor").val();
+        var id_contact = $("#id_contact").val();
+        var is_visitor = "True";
+        var tipo_doc = document.getElementById("tipo_doc").value;
+        var tipo_doc_valid = tipo_doc.includes("------");
+        var zone = document.getElementById("zone").value;
+        const recipientId = $("#id_recipient").val(),
+          join_function_execute = function () {
+            $("#form_visitor").hide();
+            $("#chats").show();
+            restartLastActive();
+            var message_box_validator = $("[id*=message_box]").attr("id");
+            const c2_validation_result = cookie_validation2();
+            if (message_box_validator == "message_box") {
+              if (c2_validation_result == "not_found") {
+                $("#send_chat_button").attr(
+                  "onclick",
+                  "button_send_message_bot()"
+                );
+                var message = {
+                  command: "join_chat_bot",
+                  id_recipient: recipientId,
+                  recipient: name_visitor,
+                  visitor_id: visitor_id,
+                  email: email,
+                  phone: phone,
+                  is_visitor: is_visitor,
+                  tipo_doc: tipo_doc,
+                  zone: zone,
+                  // "id_contact": id_contact,
+                };
+                socket.send(JSON.stringify(message));
+              } else {
+                $("#send_chat_button").attr("onclick", "button_send_message()");
+                const c2_rcvd_vars = c2_validation_result.split("|");
+                var message = {
+                  command: "join_chat",
+                  id_recipient: recipientId,
+                  recipient: name_visitor,
+                  visitor_id: visitor_id,
+                  email: email,
+                  is_visitor: is_visitor,
+                  id_contact: id_contact || c2_rcvd_vars[4],
+                  tipo_doc: tipo_doc,
+                  zone: zone,
+                };
+                socket.send(JSON.stringify(message));
+              }
+            } else if (message_box_validator == "message_box-chatbot") {
+              // socket.send(JSON.stringify(message));
+            } else {
+              const c2_rcvd_vars = c2_validation_result.split("|");
+              id_contact =
+                c2_rcvd_vars.length > 4 ? c2_rcvd_vars[4] : id_contact;
+              var message = {
+                // switch command to enable BOT
+                command: "join_chat",
+                id_recipient: recipientId,
+                recipient: name_visitor,
+                visitor_id: visitor_id,
+                email: email,
+                is_visitor: is_visitor,
+                id_contact: id_contact,
+                tipo_doc: tipo_doc,
+                zone: zone,
+              };
+              socket.send(JSON.stringify(message));
+            }
+          };
+
+        field_validation_error = function (id_field, placeholder_text) {
+          document.getElementById(id_field).value = "";
+          document.getElementById(id_field).style.borderColor = "#FF0000";
+          document.getElementById(id_field).placeholder = placeholder_text;
+        };
+
+        var mailformat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+        var ok_form_flag = true;
+
+        var nameformat = /^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$/;
+        if (!nameformat.test(name_visitor)) {
+          ok_form_flag = false;
+          field_validation_error("name_visitor", "Ingresa un Nombre válido");
+        }
+        var str_visitor_id = visitor_id.toString();
+        var str_phone = phone.toString();
+        var str_phone_start_ok = false;
+
+        if (isNaN(visitor_id) || str_visitor_id.length < 5) {
+          ok_form_flag = false;
+          field_validation_error(
+            "visitor_id",
+            "Introduzca un documento válido"
+          );
+        } else if (!email.match(mailformat)) {
+          ok_form_flag = false;
+          field_validation_error("email_visitor", "Ingresa un email válido");
+        } else if (str_phone.startsWith("3") || str_phone.startsWith("6")) {
+          str_phone_start_ok = true;
+        } else if (
+          isNaN(phone) ||
+          str_phone.length < 7 ||
+          str_phone.length > 10 ||
+          str_phone_start_ok == false
+        ) {
+          ok_form_flag = false;
+          field_validation_error(
+            "phone_visitor",
+            "Digita un número entre 7 y 10 dígitos"
+          );
+        }
+
+        if (tipo_doc_valid) {
+          ok_form_flag = false;
+          field_validation_error("tipo_doc", "Seleccione un tipo de documento");
+          document.getElementById("tipo_doc").value = "------";
+        }
+        if (zone == "0") {
+          ok_form_flag = false;
+          field_validation_error("zone", "Selecciona una región");
+          document.getElementById("zone").value = "0";
+        }
+
+        if (ok_form_flag) {
+          socket = new ReconnectingWebSocket(ws_path, [], options);
+          socket.onopen = () => {
+            console.log("Socket connected!");
+            reconnectionsMade = reconnectionsMade + 1;
+            console.log("connections made " + reconnectionsMade);
+            if (reconnectionsMade > 3) {
+              console.log("done");
+              clearChat();
+              socket.close();
+            }
+            if (
+              !isNaN($("#visitor_id").val()) &&
+              $("#visitor_id").val().length > 4
+            ) {
+              join_function_execute();
+            } else {
+              clearChat();
+              socket.close();
+            }
+          };
+          socket.onmessage = function (message) {
+            var data = JSON.parse(message.data);
+            data = data.data;
+            // Handle errors
+            if (data.error) {
+              alert(data.error);
+              return;
+            }
+            if (data.action == "visitor_status") {
+              var box_hold = $("#box_hold").length > 0;
+
+              if (data.status == "hold" && box_hold == false) {
+                $("#box_hold").remove();
+                var divbox =
+                  "<div class='box box-warning box-solid' id='box_hold' style='padding: 14px'> " +
+                  "<div class='alert alert-warning' style='padding: 14px'>" +
+                  "<h3 class='box-title' style='color: black; font-size: 16px'>Agradecemos tu tiempo de espera, en un momento \
+                           uno de nuestros asesores te atenderá para una atención virtual personalizada.</h3>" +
+                  "</div>" +
+                  // "<div class='box-body'>"+
+                  // ""+
+                  // "</div>"+
+                  // "<!-- /.box-body -->"+
+                  // "<!-- Loading (remove the following to stop the loading)-->"+
+                  // "<div class='overlay'>"+
+                  // "<i class='fa fa-refresh fa-spin'></i>"+
+                  // "</div>"+
+                  // "<!-- end loading -->"+
+                  "</div>" +
+                  "<!-- /.box -->";
+                $("#chats").show();
+                var msgdiv = $("#message_box-chatbot");
+                $("#message_box-chatbot").append(divbox);
+                msgdiv.scrollTop(msgdiv.prop("scrollHeight"));
+              } else if (data.status == "no_working_time") {
+                alert(
+                  "Lo sentimos, en este momento nuestros asesores no se encuentran disponibles \n\n" +
+                    "Nuestro Horario de atención es: L-V de 7:00am a 7:00pm y sábados de 8:00am a 2:00pm"
+                );
+                close_button_wo_message();
+              } else if (
+                data.status == "ready" ||
+                data.status == "transfered"
+              ) {
+                $("#box_hold").remove();
+                $("#box_chat").show();
+
+                var validate_id_user = $("#id_user").val();
+                if (data.status == "ready") {
+                  $("#chats").show();
+                }
+                $("#box_chat_title").text(data.user_name);
+                $("#contacts-list-name").text(data.user_name);
+
+                $("[id*=message_box]").attr(
+                  "id",
+                  "message_box-" + data.id_user
+                );
+                $("#id_user").val(data.id_user);
+                $("#id_recipient").val(data.id_recipient);
+                $("#recipient").val(data.recipient);
+                // aquí va un if con la cookie de transferencia asesor
+
+                var c2_validation_result = cookie_validation2();
+                if (c2_validation_result == "not_found") {
+                  console.log("not_found on visitor_status");
+                } else {
+                  if (validate_id_user == "chatbot") {
+                    message_after_dislike();
+                  }
+                  var c_validation_result = cookie_validation();
+                  var c_rcvd_vars = c_validation_result.split("|");
+                  const agentCookieData = c2_validation_result.split("|");
+                  socket.send(
+                    JSON.stringify({
+                      command: "retrieve_visitor_history",
+                      name_visitor: c_rcvd_vars[0] || agentCookieData[0],
+                      visitor_id: c_rcvd_vars[1] || agentCookieData[1],
+                      email_visitor: c_rcvd_vars[2] || agentCookieData[2],
+                      phone: c_rcvd_vars[3] || agentCookieData[3],
+                      id_contact: c_rcvd_vars[4] || agentCookieData[4],
+                      time_stamp: c_rcvd_vars[6] || agentCookieData[6],
+                    })
+                  );
+                }
+              }
+            } else if (data.action == "chat_transfer") {
+              $("#box_chat_title").text(data.user_name);
+              $("[id*=message_box]").attr("id", "message_box-" + data.id_user);
+              $("#id_user").val(data.id_user);
+              message_after_dislike();
+            } else if (data.action == "user_message") {
+              var from_visitor = "false";
+              if (
+                data.message == "El asesor ha abandonado el chat" ||
+                data.message_type == "close"
+              ) {
+                var id_contact = $("#id_contact").val();
+                print_message(
+                  data.id_recipient,
+                  data.recipient,
+                  data.id_user,
+                  data.user_name,
+                  from_visitor,
+                  data.message
+                );
+                var id_chat_ws = data.id_chat_ws;
+                socket.send(
+                  JSON.stringify({
+                    command: "chat_survey",
+                    id_chat_ws: id_chat_ws,
+                    counter_survey_q: 0,
+                    id_contact: id_contact,
+                    id_survey: 2,
+                  })
+                );
+              } else {
+                print_message(
+                  data.id_recipient,
+                  data.recipient,
+                  data.id_user,
+                  data.user_name,
+                  from_visitor,
+                  data.message
+                );
+                restartLastActive();
+              }
+            } else if (data.action == "retrieve_visitor_history") {
+              // var last_user = data.last_id_user
+              var a = $("[id*=message_box]").attr("id");
+              document.getElementById(a).innerHTML = "";
+
+              for (i in data.messages) {
+                var is_from_visitor_validate =
+                  data.messages[i].is_visitor_message;
+                if (is_from_visitor_validate == true) {
+                  var is_from_visitor = "true";
+                } else {
+                  var is_from_visitor = "false";
+                }
+                print_message(
+                  $("#id_recipient").val(),
+                  $("#recipient").val(),
+                  $("#id_user").val(),
+                  $("#box_chat_title").text(),
+                  is_from_visitor,
+                  data.messages[i].body
+                );
+              }
+            } else if (data.action == "chat_bot_questions") {
+              var send_c_b = document
+                .getElementById("send_chat_button")
+                .getAttribute("onclick");
+              if (send_c_b == "button_send_message_bot()") {
+                $("#id_user").val("chatbot");
+              }
+
+              $("#id_contact").val(data.id_contact);
+              $("[id*=message_box]").attr("id", "message_box-chatbot");
+              $("#id_recipient").val(data.id_recipient);
+              $("#recipient").val(data.recipient);
+
+              var from_visitor = "false";
+              var name_visitor = $("#name_visitor").val();
+              var visitor_id = $("#visitor_id").val();
+              var email = $("#email_visitor").val();
+              var id_contact = $("#id_contact").val();
+              var tipo_doc = document.getElementById("tipo_doc").value;
+              var is_visitor = "True";
+              var zone = document.getElementById("zone").value;
+              restartLastActive();
+              var question_message = "";
+              var question_message_b = "";
+              var func = "";
+
+              var chat_bot_disabled = false;
+              if (chat_bot_disabled) {
+                go_to_agent();
+              } else {
+                // alert("Habilitar contenido")
+                // Enable content to enable bot
+                for (i in data.questions) {
+                  if (data.questions[i]["answers"] == "w/o answer") {
+                    question_message = data.questions[i].questions;
+                    print_message(
+                      $("#id_recipient").val(),
+                      $("#recipient").val(),
+                      "chatbot",
+                      $("#box_chat_title").text(),
+                      from_visitor,
+                      question_message
+                    );
+                  } else {
+                    func = "'" + data.questions[i]["answers"] + "'";
+                    id_quest = "'" + data.questions[i]["id"] + "'";
+                    question_message_b =
+                      question_message_b +
+                      '<button class="btn btn-primary btn-sm" style="font-size: 14px; border: 1px solid #ffffff; display:block; background:#ffeee6; color: #505050; margin:0!important; white-space: normal; word-wrap: break-word; width: 290px;"' +
+                      'onclick="button_send_message_bot_byclick(' +
+                      func +
+                      ", " +
+                      id_quest +
+                      ')">' +
+                      data.questions[i].questions +
+                      "</button>";
+                  }
+                }
+                print_message(
+                  $("#id_recipient").val(),
+                  $("#recipient").val(),
+                  "chatbot",
+                  $("#box_chat_title").text(),
+                  from_visitor,
+                  question_message_b
+                );
+              }
+            } else if (data.action == "chat_bot_answers") {
+              $("#id_user").val("chatbot");
+              $("[id*=message_box]").attr("id", "message_box-chatbot");
+              $("#id_recipient").val(data.id_recipient);
+              $("#recipient").val(data.recipient);
+
+              var from_visitor = "true";
+              var name_visitor = $("#name_visitor").val();
+              var visitor_id = $("#visitor_id").val();
+              var email = $("#email_visitor").val();
+              var is_visitor = "True";
+              var id_contact = $("#id_contact").val();
+              var tipo_doc = document.getElementById("tipo_doc").value;
+              var zone = document.getElementById("zone").value;
+              const cookieData = restartLastActive();
+
+              if (data.answer == "not_found") {
+                question_message =
+                  "Por favor verifica las opciones de consulta, en caso de que ninguna corresponda con el tema de tu interés escribe la palabra “Asesor” para recibir atención personalizada. ";
+                for (i in data.questions) {
+                  var counter = parseInt(i) + parseInt(1);
+                  question_message =
+                    question_message +
+                    "<br>" +
+                    counter +
+                    ". " +
+                    data.questions[i].questions;
+                  // question_message = counter + ". " + data.questions[i].questions
+                }
+                print_message(
+                  $("#id_recipient").val(),
+                  $("#recipient").val(),
+                  "chatbot",
+                  $("#box_chat_title").text(),
+                  from_visitor,
+                  question_message
+                );
+              } else if (data.answer == "go_to_agent") {
+                var name_visitor = $("#name_visitor").val();
+                var visitor_id = $("#visitor_id").val();
+                var email = $("#email_visitor").val();
+                var is_visitor = "True";
+                var id_contact = $("#id_contact").val();
+                var tipo_doc = document.getElementById("tipo_doc").value;
+                var zone = document.getElementById("zone").value;
+                set_cookie("cookie_agent", ...cookieData);
+                // cambiar send_chat_button de button_send_message_bot() a button_send_message()
+                $("#send_chat_button").attr("onclick", "button_send_message()");
+                var message = {
+                  command: "join_chat",
+                  id_recipient: $("#id_recipient").val(),
+                  recipient: name_visitor,
+                  visitor_id: visitor_id,
+                  email: email,
+                  is_visitor: is_visitor,
+                  id_contact: id_contact,
+                  tipo_doc: tipo_doc,
+                  zone: zone,
+                };
+                socket.send(JSON.stringify(message));
+              } else if (
+                data.answer == "go_to_level_" ||
+                data.answer == "init_go_to_level_" ||
+                data.answer == "Volver al inicio del chat"
+              ) {
+                var question_message = "";
+                var question_message_b = "";
+                var func = "";
+                var from_visitor = "false";
+
+                if (data.answer == "init_go_to_level_") {
+                  question_message =
+                    "Por favor verifica las opciones de consulta, en caso de que ninguna \
+                                    corresponda con el tema de tu interés escribe la palabra “Asesor” \
+                                    para recibir atención personalizada ";
+                  print_message(
+                    $("#id_recipient").val(),
+                    $("#recipient").val(),
+                    "chatbot",
+                    $("#box_chat_title").text(),
+                    from_visitor,
+                    question_message
+                  );
+                }
+
+                for (i in data.questions) {
+                  if (data.questions[i]["answers"] == "w/o answer") {
+                    question_message = data.questions[i].questions;
+                    print_message(
+                      $("#id_recipient").val(),
+                      $("#recipient").val(),
+                      "chatbot",
+                      $("#box_chat_title").text(),
+                      from_visitor,
+                      question_message
+                    );
+                  } else {
+                    func = "'" + data.questions[i]["answers"] + "'";
+                    id_quest = "'" + data.questions[i]["id"] + "'";
+                    question_message_b =
+                      question_message_b +
+                      '<button class="btn btn-primary btn-sm" style="font-size: 14px; border: 1px solid #ffffff; display:block; background:#ffeee6; color: #505050; margin:0!important; white-space: normal;word-wrap: break-word; width: 290px; "' +
+                      'onclick="button_send_message_bot_byclick(' +
+                      func +
+                      ", " +
+                      id_quest +
+                      ')">' +
+                      data.questions[i].questions +
+                      "</button>";
+                  }
+                }
+                if (question_message_b == "") {
+                  question_message_b =
+                    "¿Deseas que te colabore con algo más?? <br> " +
+                    '<div class="btn-group">' +
+                    '<button class="btn btn-primary btn-sm" style="font-size: 14px; margin-left: 20px; display:block; border: none; background-color: #e7e7e7; color: black;"' +
+                    'onclick="go_to_begining()">Sí</button>' +
+                    '<button class="btn btn-primary btn-sm" style="font-size: 14px; margin-left: 2px; display:block; border: none; background-color: #e7e7e7; color: black;"' +
+                    'onclick="go_to_likeordislike()">No</button>' +
+                    "</div>";
+                  print_message(
+                    $("#id_recipient").val(),
+                    $("#recipient").val(),
+                    "chatbot",
+                    $("#box_chat_title").text(),
+                    from_visitor,
+                    question_message_b
+                  );
+                } else {
+                  print_message(
+                    $("#id_recipient").val(),
+                    $("#recipient").val(),
+                    "chatbot",
+                    $("#box_chat_title").text(),
+                    from_visitor,
+                    question_message_b
+                  );
+                }
+              } else {
+                from_visitor = "false";
+                print_message(
+                  $("#id_recipient").val(),
+                  $("#recipient").val(),
+                  "chatbot",
+                  $("#box_chat_title").text(),
+                  from_visitor,
+                  data.answer.answers
+                );
+              }
+            } else if (data.action == "chat_survey") {
+              var cs_id_chat_ws = data.id_chat_ws;
+              var cs_question = data.question;
+              var from_visitor = "false";
+              var cs_counter_survey_q = parseInt(data.counter_survey_q);
+              var id_survey = data.id_survey;
+
+              $("#survey_data").remove();
+              let input_box_footer_survey = document.createElement("input");
+              input_box_footer_survey.setAttribute("type", "hidden");
+              input_box_footer_survey.setAttribute("id", "survey_data");
+              div_input_box_footer.appendChild(input_box_footer_survey);
+              var survey_data =
+                "chat_survey|" +
+                cs_id_chat_ws +
+                "|" +
+                cs_counter_survey_q +
+                "|" +
+                id_survey;
+              $("#survey_data").val(survey_data);
+              document
+                .getElementById("send_chat_button")
+                .setAttribute("onclick", "survey_send_message()");
+
+              delete_cookie("cookie_ws");
+              if ($("#box_hold").length > 0) {
+                $("#box_hold").remove();
+              }
+
+              var question_type = data.question_type;
+              if (question_type == "1to5") {
+                surv_butt_click = function (answ) {
+                  var elements = "survey_" + cs_counter_survey_q + "_" + answ;
+                  document.getElementById(elements).style.color = "white";
+                  document.getElementById(elements).style.background = "black";
+                  for (var i = 1; i < 6; i++) {
+                    var elements_for =
+                      "survey_" + cs_counter_survey_q + "_" + i;
+                    document.getElementById(elements_for).disabled = true;
+                  }
+                  $("div.emojionearea-editor").text(answ);
+                  survey_send_message();
+                };
+                cs_question =
+                  cs_question +
+                  "<br> <br>" +
+                  '<div class="btn-group mr-2" role="group" aria-label="First group">' +
+                  '<button type="button" id="survey_' +
+                  cs_counter_survey_q +
+                  "_1" +
+                  '" class="btn btn-outline-primary" style="border: 1px solid gray; border-bottom-left-radius: 20%;border-top-left-radius: 20%;" onclick="surv_butt_click(1)">1</button>' +
+                  '<button type="button" id="survey_' +
+                  cs_counter_survey_q +
+                  "_2" +
+                  '" class="btn btn-outline-primary" style="border: 1px solid gray;" onclick="surv_butt_click(2)">2</button>' +
+                  '<button type="button" id="survey_' +
+                  cs_counter_survey_q +
+                  "_3" +
+                  '" class="btn btn-outline-primary" style="border: 1px solid gray;" onclick="surv_butt_click(3)">3</button>' +
+                  '<button type="button" id="survey_' +
+                  cs_counter_survey_q +
+                  "_4" +
+                  '" class="btn btn-outline-primary" style="border: 1px solid gray;" onclick="surv_butt_click(4)">4</button>' +
+                  '<button type="button" id="survey_' +
+                  cs_counter_survey_q +
+                  "_5" +
+                  '" class="btn btn-outline-primary" style="border: 1px solid gray; border-bottom-right-radius: 20%;border-top-right-radius: 20%;" onclick="surv_butt_click(5)">5</button>' +
+                  "</div>";
+                document.getElementById("send_chat_button").disabled = true;
+                // $("div.emojionearea-editor").prop("disabled", true);
+              } else if (question_type == "yes_no") {
+                surv_butt_click_2 = function (answ) {
+                  var elements = "survey_" + cs_counter_survey_q + "_" + answ;
+                  document.getElementById(elements).style.color = "white";
+                  document.getElementById(elements).style.background = "black";
+                  document.getElementById(
+                    "survey_" + cs_counter_survey_q + "_Si"
+                  ).disabled = true;
+                  document.getElementById(
+                    "survey_" + cs_counter_survey_q + "_No"
+                  ).disabled = true;
+                  $("div.emojionearea-editor").text(answ);
+                  survey_send_message();
+                };
+                var Si = "'" + "Si" + "'";
+                var No = "'" + "No" + "'";
+                cs_question =
+                  cs_question +
+                  "<br>" +
+                  '<div class="btn-group mr-2" role="group" aria-label="First group"><br>' +
+                  '<button type="button" id="survey_' +
+                  cs_counter_survey_q +
+                  "_Si" +
+                  '" class="btn btn-outline-primary" style="border: 1px solid gray; border-bottom-left-radius: 20%;border-top-left-radius: 20%;" onclick="surv_butt_click_2(' +
+                  Si +
+                  ')">SI</button>' +
+                  '<button type="button" id="survey_' +
+                  cs_counter_survey_q +
+                  "_No" +
+                  '" class="btn btn-outline-primary" style="border: 1px solid gray; border-bottom-right-radius: 20%;border-top-right-radius: 20%;" onclick="surv_butt_click_2(' +
+                  No +
+                  ')">NO</button>' +
+                  "</div>";
+                document.getElementById("send_chat_button").disabled = true;
+              } else {
+                document.getElementById("send_chat_button").disabled = false;
+              }
+              if (cs_question == "Nomorequestionsremainsindb") {
+                alert(
+                  "¡Gracias! Tu opinión nos permite mejorar. ¡Hasta pronto!"
+                );
+                close_button_wo_message();
+              } else {
+                print_message(
+                  $("#id_recipient").val(),
+                  $("#recipient").val(),
+                  $("#id_user").val(),
+                  "Survey",
+                  from_visitor,
+                  cs_question
+                );
+              }
+            }
+          };
+        }
+      });
+
+      sub = function (obj) {
+        var file = obj.value;
+        var fileName = file.split("\\");
+        let photo = document.getElementById("upfile").files[0];
+        let formData = new FormData();
+        formData.append("photo", photo);
+        fetch(`${skarletConfig.chatApiUrl}/attach_file/`, {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => pruebafile(data));
+      };
+
+      pruebafile = function (data) {
+        var from_visitor = "true";
+        $("#input_message").val(data);
+        print_message(
+          $("#id_recipient").val(),
+          $("#recipient").val(),
+          $("#id_user").val(),
+          $("#box_chat_title").text(),
+          from_visitor,
+          $("#input_message").val()
+        );
+        var id_contact = $("#id_contact").val();
+        socket.send(
+          JSON.stringify({
+            command: "send_message",
+            id_recipient: $("#id_recipient").val(),
+            recipient: $("#recipient").val(),
+            id_user: $("#id_user").val(),
+            is_visitor: "True",
+            from_visitor: from_visitor,
+            message: $("#input_message").val(),
+            id_contact: id_contact,
+          })
+        );
+        $("div.emojionearea-editor").text("");
+      };
+
+      print_message = function (
+        id_recipient,
+        recipient,
+        id_user,
+        username,
+        from_visitor,
+        message
+      ) {
+        var now = new Date().toLocaleString();
+        if (message != "Chat window was closed by customer") {
+          var msg_type = 0;
+          var msgdiv = $("#message_box-" + id_user);
+          var ok_msg = "";
+          // msg types are defined in chat/settings.py
+          // Only for demo purposes is hardcoded, in production scenarios, consider call a service.
+          //switch (data.msg_type) {
+          let a = message.split("/");
+          var flagMessageParser = true;
+          if (a[1] == "media") {
+            let path = a[3];
+            if (from_visitor == "true") {
+              //message = "<a href='/chat/attached_file_download/"+path+"' style='color:rgb(255,255,0)'>"+a[2]+"</a>"
+              // message = "<a href='http://192.168.0.64/chat/attached_file_download/"+path+"' style='color:rgb(255,255,255)'>"+a[2]+"</a>"
+              message = `<a href="${skarletConfig.chatApiUrl}/attached_file_download/${path}" style='color:rgb(0,0,255)' target="_blank">${a[3]}</a>`;
+            } else {
+              message = `<a href="${skarletConfig.chatApiUrl}/attached_file_download/${path}" target="_blank">${a[3]}</a>`;
+            }
+            var flagMessageParser = false;
+          }
+          if (message.includes("href=")) {
+            var flagMessageParser = false;
+          }
+          if (flagMessageParser) {
+            message = messageUrlparser(message);
+          }
+
+          switch (msg_type) {
+            case 0:
+              // Message
+
+              if (from_visitor != "true") {
+                var message_substr = message.substring(1, 7);
+                if (message_substr == "button") {
+                  message =
+                    '<div class="btn-group-vertical" style="overflow: hidden; word-wrap: break-word;">' +
+                    message +
+                    "</div>";
+
+                  ok_msg =
+                    "<!-- Message. Default to the left -->" +
+                    "<div class='direct-chat-msg' id='direct_chat' style='margin-bottom: 12px;'>" +
+                    "<div class='direct-chat-info clearfix' style='margin-top: 6px'>" +
+                    "<span class='direct-chat-name pull-left' style='color: grey; font-weight:400; font-size: 13px; margin-left: 6px;' >" +
+                    username +
+                    "</span>" +
+                    "<span class='direct-chat-timestamp pull-right' style='font-size: 12px; font-weight:400; color: grey; margin-right: 12px;'>" +
+                    now +
+                    "</span>" +
+                    "</div>" +
+                    "<!-- /.direct-chat-info -->" +
+                    "<div style='display: flex;'>" +
+                    "<img class='direct-chat-img' src='https://i.ibb.co/TqTsgGV/Chat-icono.png' style='height: 30px; width: 30px'; margin: 0>" +
+                    "<!-- /.direct-chat-img -->" +
+                    "<div class='direct-chat-text pull-left' style='overflow: hidden; background: white; border: 0;  font-size: 14px; margin-left: 12px;  word-wrap: break-word; line-height: 18px;'>" +
+                    message +
+                    "</div>" +
+                    "</div>" +
+                    "<!-- /.direct-chat-text -->";
+                } else {
+                  ok_msg =
+                    "<!-- Message. Default to the left -->" +
+                    "<div class='direct-chat-msg' id='direct_chat' style='margin-bottom: 12px;'>" +
+                    "<div class='direct-chat-info clearfix'>" +
+                    "<span class='direct-chat-name pull-left' style='color: grey; font-weight:400; font-size: 13px; margin-left: 6px;' >" +
+                    username +
+                    "</span>" +
+                    "<span class='direct-chat-timestamp pull-right' style='font-size: 12px; font-weight:400; color: grey; margin-right: 12px;'>" +
+                    now +
+                    "</span>" +
+                    "</div>" +
+                    "<!-- /.direct-chat-info -->" +
+                    "<div style='display: flex;'>" +
+                    "<img class='direct-chat-img' src='https://i.ibb.co/TqTsgGV/Chat-icono.png' style='height: 30px; width: 30px; margin: 0'>" +
+                    "<!-- /.direct-chat-img -->" +
+                    "<div style='border-top-right-radius: 20px; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;" +
+                    "background-color: LightGrey; margin-left: 12px; margin-right: 30px; font-size: 14px; word-wrap: break-word; line-height: 18px;'>" +
+                    "<div class='direct-chat-text pull-left' style='text-align: justify; padding: 8px; margin-left: 12px; margin-right: 12px; font-size: 14px; word-wrap: break-word; line-height: 18px;'>" +
+                    message +
+                    "</div>" +
+                    "</div>" +
+                    "<!-- /.direct-chat-text -->" +
+                    "</div>";
+                }
+              } else {
+                ok_msg =
+                  "<!-- Message. Default to the right -->" +
+                  "<div class='direct-chat-msg right' id='direct_chat' style='margin-bottom: 12%;'>" +
+                  "<div class='direct-chat-info clearfix'>" +
+                  "<span class='direct-chat-name pull-right' style='color: grey; font-weight:400; font-size: 13px; margin-right: 6px;'>" +
+                  recipient +
+                  "</span>" +
+                  "<span class='direct-chat-timestamp pull-left' style='font-size: 12px; font-weight:400; color: grey; margin-left: 12px;'>" +
+                  now +
+                  "</span>" +
+                  "</div>" +
+                  "<div class='direct-chat-mssg clearfix' style='display: flex; float: right;'>" +
+                  "<div class='direct-chat-mssg clearfix' style='border-top-left-radius: 20px; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; background-color: #ffeee6; margin-left: 12px; margin-right: 30px; font-size: 14px; word-wrap: break-word; line-height: 18px;'>" +
+                  "<div style='word-wrap: break-word; padding: 14px'>" +
+                  message +
+                  "</div>" +
+                  "</div>" +
+                  "<img class='direct-chat-img' src='https://i.ibb.co/TqTsgGV/Chat-icono.png' style='height: 30px; width: 30px'><!-- /.direct-chat-img -->" +
+                  "</div>" +
+                  "</div>";
+              }
+              break;
+          }
+          msgdiv.append(ok_msg);
+          msgdiv.scrollTop(msgdiv.prop("scrollHeight"));
+        }
+      };
+
+      //---------------------------------
+
+      $("#remove_button").click(function () {
+        socket.send(
+          JSON.stringify({
+            command: "remove_visitor",
+            id_user: $("#id_user").val(),
+            id_recipient: $("#id_recipient").val(),
+            visitor_id: $("#visitor_id").val(),
+          })
+        );
+      });
+
+      button_send_message = function () {
+        var from_visitor = "true";
+        var id_contact = $("#id_contact").val();
+        const cookieData = restartLastActive();
+        set_cookie("cookie_agent", ...cookieData);
+        var message = $("#input_message")[0].emojioneArea.getText();
+
+        if (message == "") {
+          alert("Debes escribir un mensaje primero");
+        } else {
+          print_message(
+            $("#id_recipient").val(),
+            $("#recipient").val(),
+            $("#id_user").val(),
+            $("#box_chat_title").text(),
+            from_visitor,
+            message
+          );
+          var id_contact = $("#id_contact").val();
+
+          if (!id_contact) {
+            document.getElementById("box_chat_title").innerText =
+              "Asistente Virtual";
+            clearChat();
+            if ($("#box_hold").length > 0) {
+              $("#box_hold").remove();
+            }
+            socket.close();
+          } else {
+            socket.send(
+              JSON.stringify({
+                command: "send_message",
+                id_recipient: $("#id_recipient").val(),
+                recipient: $("#recipient").val(),
+                id_user: $("#id_user").val(),
+                is_visitor: "True",
+                from_visitor: from_visitor,
+                message: message,
+                id_contact: id_contact,
+                //"message": $("#input_message").val()
+              })
+            );
+            $("div.emojionearea-editor").text("");
+          }
+        }
+      };
+
+      button_send_message_bot = function () {
+        const id_contact = $("#id_contact").val();
+        const from_visitor = "true";
+        var message = $("#input_message")[0].emojioneArea.getText();
+        if (!message == "Volver al inicio del chat") {
+          print_message(
+            $("#id_recipient").val(),
+            $("#recipient").val(),
+            $("#id_user").val(),
+            $("#box_chat_title").text(),
+            from_visitor,
+            message
+          );
+        }
+        if (!id_contact) {
+          document.getElementById("box_chat_title").innerText =
+            "Asistente Virtual";
+          clearChat(false);
+          if ($("#box_hold").length > 0) {
+            $("#box_hold").remove();
+          }
+          socket.close();
+          return;
+        }
+        restartLastActive();
+        socket.send(
+          JSON.stringify({
+            command: "send_message_bot",
+            id_recipient: $("#id_recipient").val(),
+            recipient: $("#recipient").val(),
+            id_user: $("#id_user").val(),
+            is_visitor: "True",
+            from_visitor: from_visitor,
+            message: message,
+            id_contact: id_contact,
+          })
+        );
+
+        $("div.emojionearea-editor").text("");
+      };
+
+      go_to_begining = function () {
+        let message =
+          "Recuerda que puedes digitar 'Asesor' en cualquier momento para ser transferido a uno de nuestros asesores";
+        print_message(
+          $("#id_recipient").val(),
+          $("#recipient").val(),
+          "chatbot",
+          $("#box_chat_title").text(),
+          "true",
+          message
+        );
+        $("div.emojionearea-editor").text("Volver al inicio del chat");
+        button_send_message_bot();
+      };
+      go_to_likeordislike = function () {
+        question_message_c =
+          "¿Resolví su consulta? <br> " +
+          '<div class="btn-group">' +
+          '<button class="btn btn-primary btn-sm" style=" font-size: 14px; margin-left: 20px; display:block; border: none; background-color: #e7e7e7; color: black;"' +
+          'onclick="message_after_like()">👍 Si</button>' +
+          '<button class="btn btn-primary btn-sm" style="font-size: 14px; margin-left: 2px; display:block; border: none; background-color: #e7e7e7; color: black;"' +
+          'onclick="go_to_agent()">👎 No</button>' +
+          "</div>";
+
+        print_message(
+          $("#id_recipient").val(),
+          $("#recipient").val(),
+          "chatbot",
+          $("#box_chat_title").text(),
+          "false",
+          question_message_c
+        );
+      };
+
+      button_send_message_bot_byclick = function (message, id_quest) {
+        const id_contact = $("#id_contact").val();
+        const from_visitor = "true";
+        if (!id_contact) {
+          document.getElementById("box_chat_title").innerText =
+            "Asistente Virtual";
+          clearChat(false);
+          if ($("#box_hold").length > 0) {
+            $("#box_hold").remove();
+          }
+          socket.close();
+          return;
+        }
+        restartLastActive();
+        socket.send(
+          JSON.stringify({
+            command: "send_message_bot",
+            id_recipient: $("#id_recipient").val(),
+            recipient: $("#recipient").val(),
+            id_user: $("#id_user").val(),
+            is_visitor: "True",
+            from_visitor: from_visitor,
+            message: message,
+            id_contact: id_contact,
+            id_quest: id_quest,
+          })
+        );
+
+        $("div.emojionearea-editor").text("");
+      };
+
+      go_to_agent = function () {
+        document.getElementById("back_to_b_div").style.display = "none";
+        var name_visitor = $("#name_visitor").val();
+        var visitor_id = $("#visitor_id").val();
+        var email = $("#email_visitor").val();
+        var is_visitor = "True";
+        var id_contact = $("#id_contact").val();
+        var tipo_doc = document.getElementById("tipo_doc").value;
+        var zone = document.getElementById("zone").value;
+        const cookieData = restartLastActive();
+        set_cookie("cookie_agent", ...cookieData);
+        // cambiar send_chat_button de button_send_message_bot() a button_send_message()
+        $("#send_chat_button").attr("onclick", "button_send_message()");
+        var message = {
+          command: "join_chat",
+          id_recipient: $("#id_recipient").val(),
+          recipient: name_visitor,
+          visitor_id: visitor_id,
+          email: email,
+          is_visitor: is_visitor,
+          id_contact: id_contact,
+          tipo_doc: tipo_doc,
+          zone: zone,
+        };
+        socket.send(JSON.stringify(message));
+      };
+
+      message_after_like = function () {
+        var from_visitor = "false";
+        // var id_chat_ws = data.id_chat_ws
+        var message =
+          "Fue un gusto haberte ayudado, a continuación, califica nuestro servicio con una breve encuesta: ";
+        print_message(
+          $("#id_recipient").val(),
+          $("#recipient").val(),
+          $("#id_user").val(),
+          $("#box_chat_title").text(),
+          from_visitor,
+          message
+        );
+        socket.send(
+          JSON.stringify({
+            command: "chat_survey",
+            id_recipient: $("#id_recipient").val(),
+            recipient: $("#recipient").val(),
+            recipient_name: "tbv",
+            id_user: $("#id_user").val(),
+            is_visitor: "True",
+            from_visitor: "True",
+            message: "like was pressed",
+            id_contact: $("#id_contact").val(),
+            counter_survey_q: 0,
+            id_survey: 1,
+          })
+        );
+      };
+
+      message_after_dislike = function () {
+        var message = "Acabas de ser transferido a uno de nuestros agentes.";
+        var from_visitor = "true";
+        var id_contact = $("#id_contact").val();
+
+        socket.send(
+          JSON.stringify({
+            command: "send_message",
+            id_recipient: $("#id_recipient").val(),
+            recipient: $("#recipient").val(),
+            id_user: $("#id_user").val(),
+            is_visitor: "True",
+            from_visitor: from_visitor,
+            message: message,
+            id_contact: id_contact,
+            //"message": $("#input_message").val()
+          })
+        );
+      };
+
+      show_popover = function () {
+        var validate_check = document.getElementById("tac_check");
+        if (validate_check.checked == true) {
+          document.getElementById("join_button").disabled = false;
+          // $('#tyc_modal').modal('show');
+        } else {
+          document.getElementById("join_button").disabled = true;
+        }
+      };
+
+      downloadChat = function () {
+        let contact_id = document.getElementById("id_contact").value;
+        window.open(
+          `${skarletConfig.chatApiUrl}/history_request/${contact_id}`,
+          "_blank"
+        );
+      };
+
+      messageUrlparser = function (message) {
+        message = message.replace(/(\r\n|\r|\n)/g, "<br/>");
+        var expresion =
+          /[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=]*)/g;
+        var modify = expresion.test(message);
+        if (modify) {
+          var messageResult = message.replace(expresion, function (url) {
+            return '<a href="' + url + '" target="_blank">' + url + "</a>";
+          });
+          return messageResult;
+        } else {
+          return message;
+        }
+      };
+
+      $("#input_message").emojioneArea({
+        standalone: true,
+        inline: true,
+        hideSource: true,
+        events: {
+          keyup: function (editor, event) {
+            if (
+              event.which == 13 &&
+              ($.trim(editor.text()).length > 0 ||
+                $.trim(editor.html()).length > 0)
+            ) {
+              $("#send_chat_button").click();
+              event.preventDefault();
+              event.stopPropagation();
+              editor.focus();
+            }
+          },
+        },
+      });
+    }
+  );
+});
