@@ -1,73 +1,33 @@
 .contenedor {
 display: grid;
 grid-template-areas:
-'A A A A'
-'B B B B'
-'C D D D'
-'E E E E';
-}
-
-.centrado{
-    text-align: center;
+'A A A'
+'B B B'
+'C C C'
+;
 }
 
 header{
-    grid-area: A;
-    background-color: pink;
+
 }
 
 nav{
-    grid-area: B;
-    background-color: rgb(245, 102, 126);
+    background-color: #396EB0;
 }
-
+section{
+    background-color: #DADDFC;
+    grid-column: 1/4;
+}
 aside{
     background-color: #FC997C;
-    grid-area: C;
+    grid-column: 4/5;
 }
-
-main{
-    grid-area: D;
-    background-color:beige ;
-}
-
 footer{
-    grid-area: E;
-    background-color:rgb(245, 102, 126);
+    background-color:#2E4C6D;
 }
 .menu-horizontal{
-    list-style: none;
     display:flex;
     flex-direction: row;
-   justify-content: center;
-  
-}
-
-.menu-horizontal a{
-    background-color: rgb(236, 188, 188);
-       color: black;
-       text-decoration: none;
-       padding: 10px 40px;
-       margin: 4px;
-}
-
-.menu-aside {
-    list-style: none;
    
 }
 
-.menu-aside a{
-    display: block;
-    background-color: rgb(236, 188, 188);
-    color: black;
-    text-decoration: none;
-    padding: 10px 40px;
-    margin: 4px;
-}
-
-.nosotros a{
-    list-style: none;
-    display:flex;
-    flex-direction: row;
-   justify-content: center;
-}
